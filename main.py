@@ -1,10 +1,7 @@
 import os
-from os.path import exists
-import proglog
 import moviepy.editor as mp
 from tkinter import *
 from tkinter import filedialog as fd
-from tkinter import ttk
 from tkinter import messagebox
 
 
