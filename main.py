@@ -3,6 +3,8 @@ import moviepy.editor as mp
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox
+from tkinter import ttk
+import sv_ttk
 
 
 # logic
@@ -34,13 +36,13 @@ class Controller:
                 split_suffix = n_list[-1].split(".")
                 file_name = split_suffix[0]
                 print(file_name)
-            file_suffix = "." + self.interface.frmt_var.get()
+            file_suffix = "." + self.interface.var_frmt.get()
             new_path = '\\'.join(n_list[:-1]) + "\\" + file_name + file_suffix
-            videoclip = mp.VideoFileClip(old_path)
-            audioclip = videoclip.audio
-            audioclip.write_audiofile(new_path)
-            audioclip.close()
-            videoclip.close()
+            video_clip = mp.VideoFileClip(old_path)
+            audio_clip = video_clip.audio
+            audio_clip.write_audiofile(new_path)
+            audio_clip.close()
+            video_clip.close()
             if os.path.exists(new_path):
                 msg = messagebox.showinfo("Success!", "Conversion successfully completed!")
         print(self.file_path)
@@ -51,37 +53,45 @@ class Controller:
 
 class Interface:
     root = Tk()
-    lbl_0 = lbl_1 = lbl_2 = varlbl_0 = varlbl_1 = varntry_0 = None
-    brwse_btn = frmt_btn = file_ntry = nme_ntry = None
+    sv_ttk.set_theme("light")
+    lbl_pth = lbl_nter = lbl_frmt = None
+    var_lbl_pth = var_lbl_nter = varntry_0 = varntry_1 = var_lbl_frmt = var_frmt = None
+    brwse_btn = cnvrt_btn = file_ntry = nme_ntry = None
     frame = None
+    audio_options = None
+
 
     def set_up(self, controller):
         self.root.title("Video --> Audio")
         self.frame = Frame(self.root)
-        self.lbl_0, self.lbl_1, self.lbl_2 = (Label(self.frame) for _ in range(3))
-        self.varlbl_0, self.varlbl_1, self.varlbl_2, self.varntry_0, self.varntry_1 = (StringVar() for _ in range(5))
-        self.brwse_btn, self. frmt_btn = Button(self.frame, text="Browse", command=controller.on_browse_btn), Button(self.frame, text="Convert", command=controller.on_convert_btn)
-        self.file_ntry, self.nme_ntry = Entry(self.frame, textvariable=self.varntry_0), Entry(self.frame, textvariable=self.varntry_1)
+        self.lbl_pth, self.lbl_nter, self.lbl_frmt = (ttk.Label(self.frame) for _ in range(3))
+        self.var_lbl_pth, self.var_lbl_nter, self.var_lbl_frmt, self.varntry_0, self.varntry_1, self.var_frmt = (StringVar() for _ in range(6))
+        self.brwse_btn, self. cnvrt_btn = (ttk.Button(self.frame) for _ in range(2))
+        self.file_ntry, self.nme_ntry = ttk.Entry(self.frame, textvariable=self.varntry_0), ttk.Entry(self.frame, textvariable=self.varntry_1)
         # --- Drop Down ----
         self.audio_options = ["mp3", "ogg", "wav"]
-        self.frmt_var = StringVar()
-        self.frmt_var.set(self.audio_options[0])
-        self.frmt_menu = OptionMenu(self.frame, self.frmt_var, *self.audio_options)
-        self.create_interface()
+        self.var_frmt.set(self.audio_options[0])
+        self.frmt_menu = ttk.OptionMenu(self.frame, self.var_frmt, *self.audio_options)
+        self.config_interface(controller)
         self.start_mainloop()
 
-    def create_interface(self):
-        self.varlbl_0.set("Choose a file to convert."), self.varlbl_1.set("Enter File Name"), self.varlbl_2.set("Choose Format")
-        self.lbl_0.config(textvariable=self.varlbl_0), self.lbl_1.config(textvariable=self.varlbl_1), self.lbl_2.config(textvariable=self.varlbl_2)
+    def config_interface(self, controller):
+        pd = 10
+        self.brwse_btn.config(text="Browse", command=controller.on_browse_btn)
+        self.cnvrt_btn.config(text="Convert", command=controller.on_convert_btn)
+        self.var_lbl_pth.set("Choose a file to convert."), self.var_lbl_nter.set("Enter File Name"), self.var_lbl_frmt.set("Choose Format")
+        self.lbl_pth.config(textvariable=self.var_lbl_pth), self.lbl_nter.config(textvariable=self.var_lbl_nter), self.lbl_frmt.config(textvariable=self.var_lbl_frmt)
         # It is recommended to assign a non-zero weight to whatever
         # column and row that you would like to allocate extra space.
-        self.frame.grid(column=0, row=0, padx=5, pady=10)
-        self.root.grid_columnconfigure(0, weight=1), self.root.grid_columnconfigure(3, weight=1)
-        self.lbl_0.grid(row=0, column=1, columnspan=2)
+
+        # -- grid --
+        self.frame.grid(column=0, row=0, padx=pd, pady=pd)
+        self.root.grid_rowconfigure(0, weight=2), self.root.grid_columnconfigure(3, weight=2)
+        self.lbl_pth.grid(row=0, column=1, columnspan=2)
         self.file_ntry.grid(row=1, column=0, columnspan=3, sticky='WE'), self.brwse_btn.grid(row=1, column=3, sticky='WE')
-        self.lbl_1.grid(row=2, column=0, sticky='WE'), self.nme_ntry.grid(row=2, column=1, sticky='WE', columnspan=3)
-        self.lbl_2.grid(row=3, column=0, sticky='WE'), self.frmt_menu.grid(row=3, column=3, sticky='WE')
-        self.frmt_btn.grid(row=4, column=0, columnspan=4, sticky='WE')
+        self.lbl_nter.grid(row=2, column=0, sticky='WE'), self.nme_ntry.grid(row=2, column=1, sticky='WE', columnspan=3)
+        self.lbl_frmt.grid(row=3, column=0, sticky='WE'), self.frmt_menu.grid(row=3, column=3, sticky='WE')
+        self.cnvrt_btn.grid(row=4, column=0, columnspan=4, sticky='WE')
 
     def modify_var(self, str_var, txt_str):
         str_var.set(txt_str)
